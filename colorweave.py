@@ -234,81 +234,6 @@ def get_points(img):
         points.append(Point(color, 3, count))
     return points
 
-# Lambda function to convert RGB to Hex
-rtoh = lambda rgb: '#%s' % ''.join(('%02x' % p for p in rgb))
-
-def colorz(imageData, n, format, output):
-    ''' Main function to find the color palette using k-means clustering method. '''
-
-    img = Im.open(imageData)
-    img.thumbnail((200, 200)) # Resize the image for faster processing
-    w, h = img.size
-
-    if n:
-        n = int(n)
-    else:
-        n = 5
-
-    points = get_points(img) # Get all the points in an image
-    clusters = kmeans(points, n, 10) # Find the clusters in an image, given n number of clusters and difference among the clusters
-    rgbs = [map(int, c.center.coords) for c in clusters]
-
-    # Get the colors
-    final_colors_hex = []
-    for each_color in map(rtoh, rgbs):
-        final_colors_hex.append(each_color)
-
-    # Produce the output
-    if output == 'json':
-        return json.dumps(prepare_output(final_colors_hex, format), indent=4)
-    else:
-        return prepare_output(final_colors_hex, format)
-
-def euclidean(p1, p2):
-    ''' Get the euclidean distance between two points. '''
-    return sqrt(sum([
-        (p1.coords[i] - p2.coords[i]) ** 2 for i in range(p1.n)
-    ]))
-
-def calculate_center(points, n):
-    vals = [0.0 for i in range(n)]
-    plen = 0
-    for p in points:
-        plen += p.ct
-        for i in range(n):
-            vals[i] += (p.coords[i] * p.ct)
-    return Point([(v / plen) for v in vals], n, 1)
-
-def kmeans(points, k, min_diff):
-    ''' Method to perform k-means clustering on the image points with k-clusters. '''
-
-    #Form the clusters given k
-    clusters = [Cluster([p], p, p.n) for p in random.sample(points, k)]
-
-    while 1:
-        plists = [[] for i in range(k)]
-
-        for p in points:
-            smallest_distance = float('Inf')
-            for i in range(k):
-                distance = euclidean(p, clusters[i].center)
-                if distance < smallest_distance:
-                    smallest_distance = distance
-                    idx = i
-            plists[idx].append(p)
-
-        diff = 0
-        for i in range(k):
-            old = clusters[i]
-            center = calculate_center(plists[i], old.n)
-            new = Cluster(plists[i], center, old.n)
-            clusters[i] = new
-            diff = max(diff, euclidean(old.center, new.center))
-
-        if diff < min_diff:
-            break
-    #Return all the clusters
-    return clusters
 
 def palette(**kwargs):
     # Parse all the options
@@ -323,16 +248,10 @@ def palette(**kwargs):
     if url:
         imageFile = urlopen(url)
         imageData = cStringIO.StringIO(imageFile.read())
-        if not mode:
-            return extract_colors(imageData, n, format, output)
-        elif mode.lower() == 'kmeans' or mode.lower() == 'k-means':
-            return colorz(imageData, n, format, output)
+        return extract_colors(imageData, n, format, output)
     # If image is given as a local file path
     elif path:
-        if not mode:
-            return extract_colors(path, n, format, output)
-        elif mode.lower() == 'kmeans' or mode.lower() == 'k-means':
-            return colorz(path, n, format, output)
+        return extract_colors(path, n, format, output)
     # Unknown format of image
     else:
         print "Unable to get image. Exiting."
