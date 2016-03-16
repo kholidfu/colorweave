@@ -1,7 +1,5 @@
-import sys
 from collections import Counter, namedtuple, OrderedDict
 from operator import itemgetter, mul, attrgetter
-import colorsys
 import webcolors
 from urllib2 import urlopen
 from PIL import Image as Im
@@ -9,15 +7,13 @@ from PIL import ImageChops, ImageDraw
 from colormath.color_objects import RGBColor
 import cStringIO
 import json
-import random
-from math import sqrt
+import colorsys
+
 
 Color = namedtuple('Color', ['value', 'prominence'])
-Palette = namedtuple('Palette', 'colors bgcolor')
-Point = namedtuple('Point', ('coords', 'n', 'ct'))
-Cluster = namedtuple('Cluster', ('points', 'center', 'n'))
 
 convert3To21 = {"indigo": "purple", "gold": "orange", "firebrick": "red", "indianred": "red", "yellow": "yellow", "darkolivegreen": "green", "darkseagreen": "green", "mediumvioletred": "pink", "mediumorchid": "purple", "chartreuse": "green", "mediumslateblue": "purple", "black": "black", "springgreen": "green", "orange": "orange", "lightsalmon": "red", "brown": "brown", "turquoise": "teal", "olivedrab": "green", "cyan": "cyan", "silver": "gray", "skyblue": "blue", "darkturquoise": "teal", "goldenrod": "brown", "darkgreen": "green", "darkviolet": "purple", "darkgray": "gray", "lightpink": "pink", "teal": "teal", "darkmagenta": "purple", "lightgoldenrodyellow": "yellow", "lavender": "purple", "yellowgreen": "green", "thistle": "purple", "violet": "purple", "navy": "blue", "dimgrey": "gray", "orchid": "purple", "blue": "blue", "ghostwhite": "white", "honeydew": "white", "cornflowerblue": "blue", "darkblue": "blue", "darkkhaki": "yellow", "mediumpurple": "purple", "cornsilk": "brown", "red": "red", "bisque": "brown", "slategray": "gray", "darkcyan": "teal", "khaki": "yellow", "wheat": "brown", "deepskyblue": "blue", "darkred": "red", "steelblue": "blue", "aliceblue": "white", "lightslategrey": "gray", "gainsboro": "gray", "mediumturquoise": "teal", "floralwhite": "white", "coral": "orange", "aqua": "cyan", "burlywood": "brown", "darksalmon": "red", "beige": "white", "azure": "white", "lightsteelblue": "blue", "oldlace": "white", "greenyellow": "green", "fuchsia": "purple", "lightseagreen": "teal", "mistyrose": "white", "sienna": "brown", "lightcoral": "red", "orangered": "orange", "navajowhite": "brown", "lime": "green", "palegreen": "green", "lightcyan": "cyan", "seashell": "white", "mediumspringgreen": "green", "royalblue": "blue", "papayawhip": "yellow", "blanchedalmond": "brown", "peru": "brown", "aquamarine": "cyan", "white": "white", "darkslategray": "gray", "lightgray": "gray", "ivory": "white", "dodgerblue": "blue", "lawngreen": "green", "chocolate": "brown", "crimson": "red", "forestgreen": "green", "slateblue": "purple", "olive": "green", "mintcream": "white", "antiquewhite": "white", "hotpink": "pink", "moccasin": "yellow", "limegreen": "green", "saddlebrown": "brown", "grey": "gray", "darkslateblue": "purple", "lightskyblue": "blue", "deeppink": "pink", "plum": "purple", "darkgoldenrod": "brown", "maroon": "maroon", "sandybrown": "brown", "tan": "brown", "magenta": "purple", "rosybrown": "brown", "pink": "pink", "lightblue": "blue", "palevioletred": "pink", "mediumseagreen": "green", "linen": "white", "darkorange": "orange", "powderblue": "blue", "seagreen": "green", "snow": "white", "mediumblue": "blue", "midnightblue": "blue", "paleturquoise": "cyan", "palegoldenrod": "yellow", "whitesmoke": "white", "darkorchid": "purple", "salmon": "red", "lemonchiffon": "yellow", "lightgreen": "green", "tomato": "orange", "cadetblue": "teal", "lightyellow": "yellow", "lavenderblush": "white", "purple": "purple", "mediumaquamarine": "cyan", "green": "green", "blueviolet": "purple", "peachpuff": "yellow"}
+
 
 def prepare_output(colors, format):
     ''' Prepares the output determined by what format is given. If no format, then list of hex codes is returned '''
@@ -64,17 +60,19 @@ def prepare_output(colors, format):
                 output['tree'][convert3To21[name]].append({name : color})
         return output
 
+
 def closest_color(requested_color):
     ''' Find the name of the closest color given a requested color. '''
 
     min_colors = {}
     for key, name in webcolors.css3_hex_to_names.items():
-        r_c, g_c, b_c = webcolors.hex_to_rgb(key)
+        r_c, g_c, b_c = hex_to_rgb(key)
         rd = (r_c - requested_color[0]) ** 2
         gd = (g_c - requested_color[1]) ** 2
         bd = (b_c - requested_color[2]) ** 2
         min_colors[(rd + gd + bd)] = name
     return min_colors[min(min_colors.keys())]
+
 
 def get_color_name(requested_color):
     ''' Get the name of a color (either according to CSS3 or CSS2.1). If exact color cannot be mapped, this method finds the closest color. '''
@@ -86,18 +84,21 @@ def get_color_name(requested_color):
         actual_name = None
     return closest_name
 
+
 def distance(c1, c2):
     ''' Calculate the visual distance between the two colors. '''
     return RGBColor(*c1).delta_e(RGBColor(*c2), method='cmc')
+
 
 def rgb_to_hex(color):
     ''' Convert from RGB to Hex. '''
     return '#%.02x%.02x%.02x' % color
 
+
 def hex_to_rgb(color):
     ''' Convert from Hex to RGB. '''
-    assert color.startswith('#') and len(color) == 7
     return (int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16))
+
 
 def extract_colors(imageData, n, format, output):
     """
@@ -181,9 +182,6 @@ def extract_colors(imageData, n, format, output):
     else:
         return prepare_output(final_colors_hex, format)
 
-def norm_color(c):
-    r, g, b = c
-    return (r/255.0, g/255.0, b/255.0)
 
 def detect_background(im, colors, to_canonical):
     BACKGROUND_PROMINENCE = 0.5
@@ -209,8 +207,15 @@ def detect_background(im, colors, to_canonical):
 
     return colors, bg_color
 
+
+def norm_color(c):
+    r, g, b = c
+    return (r/255.0, g/255.0, b/255.0)
+
+
 def meets_min_saturation(c, threshold):
     return colorsys.rgb_to_hsv(*norm_color(c.value))[1] > threshold
+
 
 def autocrop(im, bgcolor):
     ''' Crop away a border of the given background color.'''
@@ -222,17 +227,8 @@ def autocrop(im, bgcolor):
     bbox = diff.getbbox()
     if bbox:
         return im.crop(bbox)
-
-    return im # no contents, don't crop to nothing
-
-def get_points(img):
-    ''' Get all the points given an image. '''
-
-    points = []
-    w, h = img.size
-    for count, color in img.getcolors(w * h):
-        points.append(Point(color, 3, count))
-    return points
+    else:
+        return im
 
 
 def palette(**kwargs):
@@ -255,4 +251,4 @@ def palette(**kwargs):
     # Unknown format of image
     else:
         print "Unable to get image. Exiting."
-        sys.exit(0)
+        return None
