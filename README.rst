@@ -1,6 +1,8 @@
 colorweave
 ==========
 
+Not actively maintained anymore. Use 99designs/colorific instead.
+
 Extract dominant colors from an image as a palette. Also get names of the colors extracted either using CSS3 standard or CSS2.1.
 
 
@@ -42,9 +44,3 @@ Select different modes of output::
     
     >> print palette(url="image_url", n=6, format="fullest")
     # Returns everything above together
-
-Use k-means Clustering for extracting dominant colors::
-
-    >> print palette(url="image_url", n=6, mode="kmeans")
-    # Returns the list of dominant colors using k-means clustering algorithm (bit slower than the default method)
-
