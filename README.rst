@@ -12,12 +12,12 @@ Note from kholidfu:
 Installation:
 -------------
 
-Dependencies:
+Dependencies::
 
     pip install pillow
     pip install colormath
 
-Setup
+Setup::
 
     python setup.py install
 
