@@ -5,9 +5,21 @@ Extract dominant colors from an image as a palette. Also get names of
 the colors extracted either using CSS3 standard or CSS2.1.
 
 Note from kholidfu:
-
+-------------------
 - Forked from jyotiska/colorweave, adding support for python3.5
 - adding example.py
+
+Installation:
+-------------
+
+Dependencies:
+
+    pip install pillow
+    pip install colormath
+
+Setup
+
+    python setup.py install
 
 Usage
 ------
