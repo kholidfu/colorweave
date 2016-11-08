@@ -1,10 +1,13 @@
 colorweave
 ==========
 
-Not actively maintained anymore. Use 99designs/colorific instead.
+Extract dominant colors from an image as a palette. Also get names of
+the colors extracted either using CSS3 standard or CSS2.1.
 
-Extract dominant colors from an image as a palette. Also get names of the colors extracted either using CSS3 standard or CSS2.1.
+Note from kholidfu:
 
+- Forked from jyotiska/colorweave, adding support for python3.5
+- adding example.py
 
 Usage
 ------
@@ -14,7 +17,8 @@ Retrieve dominant colors from an image URL::
     >> from colorweave import palette
     >> print palette(url="image_url")
 
-    The palette method takes the image from the URL and returns the hex codes of the dominant colors as a list.
+    The palette method takes the image from the URL and returns the
+    hex codes of the dominant colors as a list.
 
 Retrive dominant colors from a local image::
 
