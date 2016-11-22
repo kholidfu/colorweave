@@ -36,7 +36,7 @@ setup(
     ],
     install_requires=[
         'Pillow==1.7.8',
-        'PIL>=1.1.6',
+        # 'PIL>=1.1.6',
         'colormath<2.0.0',
         'numpy>=1.6.1',
         'webcolors>=1.4',
